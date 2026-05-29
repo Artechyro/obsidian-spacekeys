@@ -1,4 +1,4 @@
-import { App, Command, Notice, FuzzySuggestModal, KeymapContext, MarkdownView, Modal, PluginSettingTab, FuzzyMatch } from 'obsidian';
+import { App, Command, Notice, FuzzySuggestModal, KeymapContext, MarkdownView, Modal, PluginSettingTab, FuzzyMatch, Platform } from 'obsidian';
 
 import { KeyPress, KeymapItem, KeymapCommand, KeymapGroup, KeymapFile } from "src/keys";
 import { addModalTitle, findFileByName, getCommandById, listCommands, openFile } from 'src/obsidian-utils';
@@ -69,6 +69,9 @@ export class HotkeysModal extends Modal {
 	// This is already part of Modal but not part of the public API.
 	private dimBackground: boolean;
 
+	private keyboardShowHandler: CapacitorListenerHandle | null = null;
+	private keyboardHideHandler: CapacitorListenerHandle | null = null;
+
 	constructor(plugin: SpacekeysPlugin) {
 		super(plugin.app);
 		this.plugin = plugin;
@@ -91,26 +94,60 @@ export class HotkeysModal extends Modal {
 		this.scope.register(null, null, this.handleKey.bind(this));
 	}
 
-	onOpen() {
+	async onOpen() {
 		super.onOpen();
 
 		this.isOpen = true;
 
-		if (this.settings.delay <= 0)
-			this.setCollapsed(false);
-		else {
-			this.setExpandTimer();
+		this.update();
+
+		const expand = () => {
+			if (this.settings.delay <= 0)
+				this.setCollapsed(false);
+			else {
+				this.setExpandTimer();
+			}
 		}
 
-		this.update();
+		const kb = window.Capacitor.Plugins.Keyboard;
+		// We can only programatically trigger keyboard on Android
+		if (Platform.isAndroidApp && kb) {
+			// Only show suggestions when keyboard is ready
+			this.keyboardShowHandler = await kb.addListener("keyboardDidShow", async () => {
+				expand();
+				await this.keyboardShowHandler?.remove();
+				this.keyboardShowHandler = null;
+			});
+			// If user dismiss keyboard, dismiss our modal too
+			this.keyboardHideHandler = await kb.addListener("keyboardDidHide", async () => {
+				if (this.isOpen) {
+					this.close();
+				}
+				await this.keyboardHideHandler?.remove();
+				this.keyboardHideHandler = null;
+			});
+			await kb.show();
+		} else {
+			expand();
+		}
 	}
 
-	onClose() {
+	async onClose() {
 		super.onClose();
 
 		this.isOpen = false;
 		this.clearExpandTimer();
 		this.setCollapsed(true);
+
+		await this.keyboardShowHandler?.remove();
+		await this.keyboardHideHandler?.remove();
+
+		this.keyboardShowHandler = null;
+		this.keyboardHideHandler = null;
+
+		if (Platform.isAndroidApp) {
+			await window.Capacitor.Plugins.Keyboard?.hide();
+		}
 	}
 
 	/* --------------------------------------- Expand/collapse -------------------------------------- */

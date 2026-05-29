@@ -29,7 +29,7 @@ body {
 
 .spacekeys-modal {
 	position: absolute;
-	bottom: 0;
+	bottom: var(--keyboard-height);
 	width: 100%;
 	max-width: none;
 	min-height: 0;
