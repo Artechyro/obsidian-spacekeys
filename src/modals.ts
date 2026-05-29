@@ -198,6 +198,25 @@ export class HotkeysModal extends Modal {
 	 * Handle keypress.
 	 */
 	handleKey(evt: KeyboardEvent, ctx: KeymapContext) {
+		// Handle special keys to ignore
+		const IGNORED_KEYS = [
+			// Modifiers
+			"AltGraph",
+
+			// Lock keys
+			"CapsLock",
+			"NumLock",
+			"ScrollLock",
+
+			// IME / composition
+			"Dead",
+			"Compose",
+			"Process"
+		];
+		if (evt.repeat || evt.isComposing || IGNORED_KEYS.includes(ctx.key ?? "")) {
+			return;
+		}
+
 		// (Re)set expand timer
 		if (this.settings.delay > 0)
 			this.setExpandTimer();
