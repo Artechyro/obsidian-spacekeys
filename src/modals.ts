@@ -39,6 +39,8 @@ export interface HotkeysModalSettings {
 	trimDescriptions: boolean,
 	// Dim background while suggestions are open
 	dimBackground: boolean,
+	// Show virtual keyboard on mobile
+	showMobileKeyboard: boolean
 }
 
 
@@ -50,6 +52,7 @@ export const DEFAULT_HOTKEYSMODAL_SETTINGS: HotkeysModalSettings = {
 	backspaceCloses: true,
 	trimDescriptions: true,
 	dimBackground: true,
+	showMobileKeyboard: true
 };
 
 
@@ -111,7 +114,7 @@ export class HotkeysModal extends Modal {
 
 		const kb = window.Capacitor.Plugins.Keyboard;
 		// We can only programatically trigger keyboard on Android
-		if (Platform.isAndroidApp && kb) {
+		if (this.settings.showMobileKeyboard && Platform.isAndroidApp && kb) {
 			// Only show suggestions when keyboard is ready
 			this.keyboardShowHandler = await kb.addListener("keyboardDidShow", async () => {
 				expand();
@@ -145,7 +148,7 @@ export class HotkeysModal extends Modal {
 		this.keyboardShowHandler = null;
 		this.keyboardHideHandler = null;
 
-		if (Platform.isAndroidApp) {
+		if (this.settings.showMobileKeyboard && Platform.isAndroidApp) {
 			await window.Capacitor.Plugins.Keyboard?.hide();
 		}
 	}

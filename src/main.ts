@@ -619,6 +619,16 @@ class SpacekeysSettingTab extends PluginSettingTab {
 					this.plugin.settings.modal.backspaceCloses = value;
 					await this.plugin.saveSettings();
 				}));
+		
+		new Setting(containerEl)
+			.setName('Show virtual keyboard on mobile')
+			.setDesc('Show virtual keyboard on Android (iPhone is not supported). You can also click on the suggestions or use a physical keyboard.')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.modal.showMobileKeyboard)
+				.onChange(async (value: boolean) => {
+					this.plugin.settings.modal.showMobileKeyboard = value;
+					await this.plugin.saveSettings();
+				}));
 
 		// Appearance
 
