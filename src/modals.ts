@@ -283,6 +283,10 @@ export class HotkeysModal extends Modal {
 		const suggestions = this.getSuggestions(item);
 		for (const suggestion of suggestions) {
 			const el = this.suggestionsEl.createEl('div');
+			el.addEventListener('click', () => {
+				this.keySequence.push(suggestion.key);
+				this.update();
+			});
 			this.renderSuggestion(suggestion, el);
 		}
 	}
