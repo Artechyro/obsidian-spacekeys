@@ -120,14 +120,15 @@ export class HotkeysModal extends Modal {
 				expand();
 				await this.keyboardShowHandler?.remove();
 				this.keyboardShowHandler = null;
-			});
-			// If user dismiss keyboard, dismiss our modal too
-			this.keyboardHideHandler = await kb.addListener("keyboardDidHide", async () => {
-				if (this.isOpen) {
-					this.close();
-				}
-				await this.keyboardHideHandler?.remove();
-				this.keyboardHideHandler = null;
+
+				// If user dismiss keyboard, dismiss our modal too
+				this.keyboardHideHandler = await kb.addListener("keyboardDidHide", async () => {
+					if (this.isOpen) {
+						this.close();
+					}
+					await this.keyboardHideHandler?.remove();
+					this.keyboardHideHandler = null;
+				});
 			});
 			await kb.show();
 		} else {
