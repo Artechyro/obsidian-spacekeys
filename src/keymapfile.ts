@@ -337,7 +337,7 @@ export function parseKeymapYAML(lines: string, extend?: KeymapGroup): KeymapGrou
 	let data;
 
 	try {
-		data = parseYaml(lines);
+		data = parseYaml(lines.replaceAll('\t', '  '));
 	} catch (error) {
 		throw new KeymapParseError(String(error), {cause: error});
 	}
